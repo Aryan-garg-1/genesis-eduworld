@@ -93,27 +93,44 @@
       };
       if (data._honey) { return; } // spam bot filled the hidden field
 
+      var mailHref = function () {
+        var body = "Name: " + data.name + "\nPhone: " + data.phone + "\nEmail: " + data.email +
+          "\nEnquiring as: " + data.enquiring_as + "\nProgram/service: " + data.program +
+          "\n\nMessage:\n" + data.message;
+        return "mailto:" + C.email + "?subject=" + encodeURIComponent("Website enquiry from " + name) + "&body=" + encodeURIComponent(body);
+      };
+      var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+
       if (C.formEndpoint) {
         var sub = $("button[type=submit]", form); sub.disabled = true; sub.textContent = "Sending…";
-        fetch(C.formEndpoint, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(data) })
-          .then(function (r) { if (!r.ok) throw new Error("bad"); return r.json(); })
-          .then(function (j) {
-            if (j && (j.success === false || j.success === "false")) throw new Error("bad");
+        var ctrl = ("AbortController" in window) ? new AbortController() : null;
+        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
+        fetch(C.formEndpoint, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(data), signal: ctrl ? ctrl.signal : undefined })
+          .then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; });
+          })
+          .then(function (res) {
+            var j = res.j || {};
+            if (!res.ok || j.success === false || j.success === "false") {
+              var err = new Error(j.message || "The form service did not accept the enquiry.");
+              err.fromService = true; throw err;
+            }
             form.reset();
-            show("ok", "Thank you, " + name.replace(/</g, "&lt;") + ". Your enquiry has been sent.",
+            show("ok", "Thank you, " + esc(name) + ". Your enquiry has been sent.",
               "<p>The Genesis Eduworld team will use the details you gave to get in touch. If it is urgent, you can also call <a href=\"tel:" + C.phone + "\">" + C.phoneDisplay + "</a>.</p>");
           })
-          .catch(function () {
-            show("bad", "We could not send your enquiry",
-              "<p>Please try again, or call <a href=\"tel:" + C.phone + "\">" + C.phoneDisplay + "</a> or email <a href=\"mailto:" + C.email + "\">" + C.email + "</a>.</p>");
+          .catch(function (err) {
+            if (window.console) console.error("Enquiry form error:", err);
+            var why = err && err.fromService ? "<p><small>Reason from the form service: " + esc(err.message) + "</small></p>" : "";
+            show("bad", "We could not send your enquiry automatically",
+              why + "<p>Nothing has been sent yet. You can send the same details by email in one tap:</p>" +
+              "<p><a class=\"btn btn-primary\" href=\"" + mailHref() + "\">Send by email</a></p>" +
+              "<p>Or call <a href=\"tel:" + C.phone + "\">" + C.phoneDisplay + "</a>.</p>");
           })
-          .then(function () { sub.disabled = false; sub.textContent = "Send enquiry"; });
+          .then(function () { if (timer) clearTimeout(timer); sub.disabled = false; sub.textContent = "Send enquiry"; });
       } else {
         // No delivery method configured: be honest, offer a prefilled email.
-        var body = "Name: " + data.name + "\nPhone: " + data.phone + "\nEmail: " + data.email +
-          "\nEnquiring as: " + data.enquiring_as + "\nProgram/service: " + (data.program || "Not specified") +
-          "\n\nMessage:\n" + data.message;
-        var href = "mailto:" + C.email + "?subject=" + encodeURIComponent("Website enquiry from " + name) + "&body=" + encodeURIComponent(body);
+        var href = mailHref();
         show("warn", "Your enquiry has not been sent yet",
           "<p>Online sending is not switched on for this site yet, so nothing has gone to Genesis Eduworld. Your details are ready to send in one tap:</p>" +
           "<p><a class=\"btn btn-primary\" href=\"" + href + "\">Send by email</a></p>" +
