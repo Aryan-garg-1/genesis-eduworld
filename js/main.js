@@ -5,6 +5,18 @@
 
   if (C.REVIEW_FLAGS) document.documentElement.classList.add("show-flags");
 
+  // Header shadow + gentle reveal
+  var hdr = $(".site-header");
+  var onScroll = function () { hdr && hdr.classList.toggle("scrolled", window.scrollY > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.documentElement.classList.add("js");
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: .12 });
+    $$(".card,.stat,.focus-tile,.dm-grid,.band,.split,.timeline li").forEach(function (el) { el.classList.add("rv"); io.observe(el); });
+  }
+
   // Mobile menu
   var btn = $(".menu-btn"), nav = $("#site-nav");
   if (btn && nav) {

@@ -33,7 +33,7 @@ Home · About · Programs and Skills · Placement Assistance · Impact and Achie
 8. "Proposed programme / Government collaboration" wording on About.
 9. Map: link searches the written address only; confirm exact location before embedding a map.
 10. Tagline "From inefficiency towards efficiency" and the "Pioneer Institute & Placement Agency" descriptor (not used).
-Set `REVIEW_FLAGS:false` in js/config.js to hide all yellow notes and "Temporary image" tags.
+`REVIEW_FLAGS` is now false (all review notes hidden). Still open: WhatsApp number and form endpoint in js/config.js.
 
 ## Notes
 Fonts load from Google Fonts (Newsreader + Plus Jakarta Sans) with system fallbacks. Static HTML/CSS/JS, no build step.

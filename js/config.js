@@ -18,5 +18,5 @@ window.GE_CONFIG = {
 
   // Shows yellow "needs confirmation" notes and "temporary image" tags.
   // Set to false to hide them all for launch.
-  REVIEW_FLAGS: true
+  REVIEW_FLAGS: false
 };
