@@ -11,10 +11,11 @@ window.GE_CONFIG = {
   whatsapp: "",
   whatsappMessage: "Hello Genesis Eduworld, I would like to know more about your programs.",
 
-  // Enquiry form delivery. Paste a form-handling endpoint here (for example a
-  // Formspree or Getform URL). While empty, the form validates but does NOT claim
-  // to have been sent; it offers a prefilled email instead.
-  formEndpoint: "",
+  // Enquiry form delivery: enquiries are emailed to genesiseduworld@gmail.com via
+  // FormSubmit (free, no account). ONE-TIME SETUP: after the site is live, submit the
+  // form once yourself and click the "Activate Form" link FormSubmit emails to that
+  // Gmail inbox (check Spam too). If this is empty, the form falls back to a prefilled email.
+  formEndpoint: "https://formsubmit.co/ajax/genesiseduworld@gmail.com",
 
   // Shows yellow "needs confirmation" notes and "temporary image" tags.
   // Set to false to hide them all for launch.

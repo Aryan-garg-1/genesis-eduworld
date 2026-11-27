@@ -87,14 +87,18 @@
 
       var data = {
         name: name, phone: phone, email: email, enquiring_as: form.as.selectedOptions[0].text,
-        program: form.program.value, message: form.message.value.trim(), consent: "Yes"
+        program: form.program.value || "Not specified", message: form.message.value.trim() || "(no message)", consent: "Yes",
+        _subject: "New website enquiry from " + name + " (" + form.as.selectedOptions[0].text + ")",
+        _template: "table", _captcha: "false", _honey: form.elements["_honey"] ? form.elements["_honey"].value : ""
       };
+      if (data._honey) { return; } // spam bot filled the hidden field
 
       if (C.formEndpoint) {
         var sub = $("button[type=submit]", form); sub.disabled = true; sub.textContent = "Sending…";
         fetch(C.formEndpoint, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(data) })
-          .then(function (r) {
-            if (!r.ok) throw new Error("bad");
+          .then(function (r) { if (!r.ok) throw new Error("bad"); return r.json(); })
+          .then(function (j) {
+            if (j && (j.success === false || j.success === "false")) throw new Error("bad");
             form.reset();
             show("ok", "Thank you, " + name.replace(/</g, "&lt;") + ". Your enquiry has been sent.",
               "<p>The Genesis Eduworld team will use the details you gave to get in touch. If it is urgent, you can also call <a href=\"tel:" + C.phone + "\">" + C.phoneDisplay + "</a>.</p>");
